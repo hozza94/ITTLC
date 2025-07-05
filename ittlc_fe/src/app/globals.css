@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* 아코디언 메뉴 애니메이션 */
+/* 아코디언 메뉴의 애니메이션 속도를 다음과 같이 조정했습니다:
+
+메뉴가 닫힐 때 (기본 상태):
+max-height: 0.15초 (기존 0.3초에서 단축)
+opacity: 0.1초 (기존 0.2초에서 단축)
+메뉴가 열릴 때 (.open 클래스):
+max-height: 0.25초 (살짝 더 부드러운 느낌을 위해 약간 더 길게)
+opacity: 0.15초 (기본보다 약간 더 길게)
+이제 메뉴가 더 빠르게 반응할 것이며, 특히 닫힐 때의 지연이 줄어들어 더 반응성이 좋아졌습니다. 필요에 따라 이 값을 더 조정하고 싶으시면 말씀해 주세요! */
+.accordion-content {
+  transition: max-height 0.15s ease-out, opacity 0.1s ease-out;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+.accordion-content.open {
+  opacity: 1;
+  max-height: 500px; /* 적당히 큰 값으로 설정 */
+  transition: max-height 0.25s ease-in, opacity 0.15s ease-in;
+}
+
+/* 스크롤바 스타일링 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 다크 모드 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+  
+  .bg-white, header.bg-white {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  .text-gray-700, .text-gray-600, .text-gray-500,
+  .text-gray-600, .text-gray-900, .text-gray-700 {
+    color: #e5e7eb;
+  }
+  
+  .hover\:bg-gray-100:hover, 
+  .hover\:bg-gray-50:hover,
+  button.hover\:bg-gray-100:hover {
+    background-color: #374151;
+  }
+  
+  .bg-gray-50 {
+    background-color: #1f2937;
+  }
+  
+  .border-gray-100,
+  .border-b {
+    border-color: #374151;
+  }
+  
+  .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  }
+  
+  .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* 다크 모드 스크롤바 */
+  ::-webkit-scrollbar-track {
+    background: #374151;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #4b5563;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
