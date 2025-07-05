@@ -40,12 +40,21 @@ const Sidebar = () => {
       ],
     },
     {
-      id: 'prayer_request',
+      id: 'prayers',
       label: '기도',
-      // href:'/main/prayer_request',
+      // href:'/main/prayers',
       subItems: [
-        { id: 'pray_list', label: '기도 제목', href:'/main/prayer_request/list' },
-        { id: 'pray_registration', label: '기도 등록', href:'/main/prayer_request/registration' },
+        { id: 'prayer_list', label: '기도 제목', href:'/main/prayers' },
+        { id: 'prayer_registration', label: '기도 등록', href:'/main/prayers/new' },
+      ],
+    },
+    {
+      id: 'offerings',
+      label: '헌금',
+      // href:'/main/offerings',
+      subItems: [
+        { id: 'offering_list', label: '헌금 조회', href:'/main/offerings' },
+        { id: 'offering_entry', label: '헌금 입력', href:'/main/offerings/new' },
       ],
     },
     { id: 'admin', label: '관리자', href:'/main/admin' },

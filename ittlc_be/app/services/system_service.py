@@ -230,27 +230,36 @@ class SystemService:
         """대시보드 통계 조회"""
         client = await self.get_client()
         try:
-            # 성도 수
-            member_count_result = await client.execute("SELECT COUNT(*) FROM members WHERE is_active = TRUE")
-            member_count = member_count_result.rows[0][0]
+            # 성도 수 (is_active 컬럼 없이 전체 카운트)
+            member_count_result = await client.execute("SELECT COUNT(*) FROM members")
+            member_count = member_count_result.rows[0][0] if member_count_result.rows else 0
             
-            # 가족 수
-            family_count_result = await client.execute("SELECT COUNT(*) FROM families")
-            family_count = family_count_result.rows[0][0]
+            # 가족 수 (families 테이블이 없을 수 있으므로 안전하게 처리)
+            try:
+                family_count_result = await client.execute("SELECT COUNT(*) FROM families")
+                family_count = family_count_result.rows[0][0] if family_count_result.rows else 0
+            except:
+                family_count = 0
             
             # 이달의 기도 제목 수
-            prayer_count_result = await client.execute("""
-                SELECT COUNT(*) FROM prayers
-                WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
-            """)
-            prayer_count = prayer_count_result.rows[0][0]
+            try:
+                prayer_count_result = await client.execute("""
+                    SELECT COUNT(*) FROM prayers
+                    WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
+                """)
+                prayer_count = prayer_count_result.rows[0][0] if prayer_count_result.rows else 0
+            except:
+                prayer_count = 0
             
             # 이달의 헌금 총액
-            offering_amount_result = await client.execute("""
-                SELECT COALESCE(SUM(amount), 0) FROM offerings
-                WHERE strftime('%Y-%m', offering_date) = strftime('%Y-%m', 'now')
-            """)
-            offering_amount = offering_amount_result.rows[0][0]
+            try:
+                offering_amount_result = await client.execute("""
+                    SELECT COALESCE(SUM(amount), 0) FROM offerings
+                    WHERE strftime('%Y-%m', offering_date) = strftime('%Y-%m', 'now')
+                """)
+                offering_amount = offering_amount_result.rows[0][0] if offering_amount_result.rows else 0
+            except:
+                offering_amount = 0
             
             return {
                 "member_count": member_count,
@@ -260,6 +269,35 @@ class SystemService:
             }
         finally:
             await client.close()
+
+    # 엔드포인트에서 사용할 별칭 메서드들
+    async def get_system_settings(self) -> List[Dict[str, Any]]:
+        """시스템 설정 목록 조회 (엔드포인트용 별칭)"""
+        return await self.get_settings()
+    
+    async def create_system_setting(self, setting_data: Dict[str, Any]) -> Dict[str, Any]:
+        """시스템 설정 생성 (엔드포인트용 별칭)"""
+        return await self.create_setting(setting_data)
+    
+    async def get_system_setting_by_key(self, setting_key: str) -> Optional[Dict[str, Any]]:
+        """시스템 설정 조회 (엔드포인트용 별칭)"""
+        return await self.get_setting(setting_key)
+    
+    async def update_system_setting(self, setting_key: str, setting_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """시스템 설정 수정 (엔드포인트용 별칭)"""
+        return await self.update_setting(setting_key, setting_data.get('setting_value'))
+    
+    async def get_system_logs(self, skip: int = 0, limit: int = 50, **kwargs) -> List[Dict[str, Any]]:
+        """시스템 로그 목록 조회 (엔드포인트용 별칭)"""
+        return await self.get_logs(skip=skip, limit=limit, **kwargs)
+    
+    async def create_system_log(self, log_data: Dict[str, Any]) -> Dict[str, Any]:
+        """시스템 로그 생성 (엔드포인트용 별칭)"""
+        return await self.create_log(log_data)
+    
+    async def create_backup(self, backup_data: Dict[str, Any]) -> Dict[str, Any]:
+        """백업 생성 (엔드포인트용 별칭)"""
+        return await self.create_backup_record(backup_data)
 
 # 전역 시스템 서비스 인스턴스
 system_service = SystemService() 
