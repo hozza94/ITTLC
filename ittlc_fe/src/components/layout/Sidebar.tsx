@@ -97,8 +97,8 @@ const Sidebar = () => {
                 </div>
               ) : (
                 // 서브메뉴가 없는 경우 (직접 링크)
-                <Link href={item.href || '#'}>
-                  <div className="px-4 py-3 text-gray-700 hover:bg-gray-50 cursor-pointer flex justify-between items-center">
+                <Link href={item.href || '#'} className="block px-4 py-3 text-gray-700 hover:bg-gray-50 cursor-pointer">
+                  <div className="flex justify-between items-center">
                     <span>{item.label}</span>
                   </div>
                 </Link>
@@ -109,11 +109,13 @@ const Sidebar = () => {
                 >
                   <ul className="bg-gray-50">
                     {item.subItems.map((subItem) => (
-                      <li 
-                        key={subItem.id} 
-                        className="px-6 py-2 text-sm text-gray-600 hover:bg-gray-100 cursor-pointer"
-                      >
-                        <Link href={subItem.href || '#'}>{subItem.label}</Link>
+                      <li key={subItem.id}>
+                        <Link 
+                          href={subItem.href || '#'}
+                          className="block px-6 py-2 text-sm text-gray-600 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {subItem.label}
+                        </Link>
                       </li>
                     ))}
                   </ul>
