@@ -128,6 +128,17 @@ class SystemService:
         """시스템 로그 목록 조회"""
         client = await self.get_client()
         try:
+            # 먼저 system_logs 테이블이 존재하는지 확인
+            try:
+                table_check = await client.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name='system_logs'"
+                )
+                if not table_check.rows:
+                    # 테이블이 없으면 빈 배열 반환
+                    return []
+            except:
+                return []
+            
             sql = """
             SELECT sl.*, u.username
             FROM system_logs sl
@@ -151,8 +162,18 @@ class SystemService:
             sql += " ORDER BY sl.created_at DESC LIMIT ? OFFSET ?"
             params.extend([limit, skip])
             
-            result = await client.execute(sql, params)
-            return [dict(zip([col.name for col in result.columns], row)) for row in result.rows]
+            try:
+                result = await client.execute(sql, params)
+                if result.rows:
+                    return [dict(zip([col.name for col in result.columns], row)) for row in result.rows]
+                else:
+                    return []
+            except Exception as e:
+                print(f"시스템 로그 조회 중 오류: {e}")
+                return []
+        except Exception as e:
+            print(f"시스템 로그 서비스 오류: {e}")
+            return []
         finally:
             await client.close()
     

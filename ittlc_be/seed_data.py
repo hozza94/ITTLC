@@ -231,6 +231,52 @@ async def seed_admin_user():
         print(f"❌ 관리자 계정 생성 중 오류: {e}")
         return False
 
+async def seed_system_logs():
+    """시스템 로그 기본 데이터 시딩"""
+    print("📋 시스템 로그 데이터를 추가하는 중...")
+    
+    logs = [
+        ("INFO", "시스템", "시스템이 시작되었습니다", None, None),
+        ("INFO", "사용자", "관리자 계정이 생성되었습니다", None, None),
+        ("INFO", "기도", "기도 카테고리가 초기화되었습니다", None, None),
+        ("INFO", "헌금", "헌금 종류가 초기화되었습니다", None, None),
+        ("INFO", "설정", "시스템 설정이 초기화되었습니다", None, None),
+        ("INFO", "데이터베이스", "데이터베이스 마이그레이션이 완료되었습니다", None, None),
+        ("INFO", "백업", "데이터베이스 백업이 완료되었습니다", None, None),
+        ("WARNING", "보안", "비밀번호 정책이 업데이트되었습니다", None, None),
+        ("INFO", "시스템", "시스템 점검이 완료되었습니다", None, None),
+        ("INFO", "사용자", "사용자 권한이 업데이트되었습니다", None, None)
+    ]
+    
+    try:
+        from libsql_client import create_client
+        
+        # HTTP URL로 변환
+        libsql_url = os.getenv("LIBSQL_URL")
+        auth_token = os.getenv("LIBSQL_AUTH_TOKEN")
+        http_url = libsql_url.replace("libsql://", "https://")
+        
+        client = create_client(url=http_url, auth_token=auth_token)
+        
+        for log_level, log_type, message, ip_address, user_agent in logs:
+            try:
+                await client.execute(
+                    """INSERT INTO system_logs 
+                       (log_level, log_type, message, ip_address, user_agent) 
+                       VALUES (?, ?, ?, ?, ?)""",
+                    [log_level, log_type, message, ip_address, user_agent]
+                )
+                print(f"  ✅ {log_type}: {message}")
+            except Exception as e:
+                print(f"  ❌ {log_type}: {e}")
+        
+        await client.close()
+        return True
+        
+    except Exception as e:
+        print(f"❌ 시스템 로그 시딩 중 오류: {e}")
+        return False
+
 async def create_sample_data():
     """샘플 데이터 생성 (선택사항)"""
     print("📝 샘플 데이터를 생성하는 중...")
@@ -313,13 +359,14 @@ async def main():
     print("="*60)
     
     success_count = 0
-    total_tasks = 5
+    total_tasks = 6
     
     tasks = [
         ("기도 카테고리", seed_prayer_categories),
         ("헌금 종류", seed_offering_types),
         ("시스템 설정", seed_system_settings),
         ("관리자 계정", seed_admin_user),
+        ("시스템 로그", seed_system_logs),
         ("샘플 데이터", create_sample_data)
     ]
     
