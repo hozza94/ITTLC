@@ -55,6 +55,16 @@ const Sidebar = () => {
       subItems: [
         { id: 'offering_list', label: '헌금 조회', href:'/main/offerings' },
         { id: 'offering_entry', label: '헌금 입력', href:'/main/offerings/new' },
+        { id: 'offering_statistics', label: '헌금 통계', href:'/main/offerings/statistics' },
+      ],
+    },
+    {
+      id: 'families',
+      label: '가족',
+      // href:'/main/families',
+      subItems: [
+        { id: 'family_list', label: '가족 조회', href:'/main/families' },
+        { id: 'family_registration', label: '가족 등록', href:'/main/families/new' },
       ],
     },
     { id: 'admin', label: '관리자', href:'/main/admin' },
