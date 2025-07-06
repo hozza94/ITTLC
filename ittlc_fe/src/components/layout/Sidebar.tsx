@@ -16,7 +16,9 @@ type MenuItem = {
 const Sidebar = () => {
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
 
-  const toggleMenu = (menuId: string) => {
+  const toggleMenu = (menuId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setExpandedMenus(prev => ({
       ...prev,
       [menuId]: !prev[menuId]
@@ -76,13 +78,13 @@ const Sidebar = () => {
         <ul className="py-2">
           {menuItems.map((item) => (
             <li key={item.id} className="border-b border-gray-100">
-              <Link href={item.href || '#'}>
-              <div 
-                className="px-4 py-3 text-gray-700 hover:bg-gray-50 cursor-pointer flex justify-between items-center"
-                onClick={() => item.subItems && toggleMenu(item.id)}
-              >
-                <span>{item.label}</span>
-                {item.subItems && (
+              {item.subItems ? (
+                // 서브메뉴가 있는 경우
+                <div 
+                  className="px-4 py-3 text-gray-700 hover:bg-gray-50 cursor-pointer flex justify-between items-center"
+                  onClick={(e) => toggleMenu(item.id, e)}
+                >
+                  <span>{item.label}</span>
                   <svg 
                     className={`w-4 h-4 transition-transform duration-200 ${expandedMenus[item.id] ? 'transform rotate-180' : ''}`} 
                     fill="none" 
@@ -92,9 +94,15 @@ const Sidebar = () => {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                )}
-              </div>
-              </Link>
+                </div>
+              ) : (
+                // 서브메뉴가 없는 경우 (직접 링크)
+                <Link href={item.href || '#'}>
+                  <div className="px-4 py-3 text-gray-700 hover:bg-gray-50 cursor-pointer flex justify-between items-center">
+                    <span>{item.label}</span>
+                  </div>
+                </Link>
+              )}
               {item.subItems && (
                 <div 
                   className={`accordion-content ${expandedMenus[item.id] ? 'open' : ''}`}
