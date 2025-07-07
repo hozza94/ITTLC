@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, AlertCircle, Info, AlertTriangle, XCircle } from 'lucide-react';
-import { SystemLog, dashboardAPI } from '@/lib/api';
+import { SystemLog, systemService, withFallback } from '@/lib/api';
 
 const RecentActivity: React.FC = () => {
   const [logs, setLogs] = useState<SystemLog[]>([]);
@@ -14,12 +14,73 @@ const RecentActivity: React.FC = () => {
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      const data = await dashboardAPI.getRecentLogs(10);
+      
+      // Mock 데이터 정의
+      const mockLogs: SystemLog[] = [
+        {
+          id: 1,
+          log_level: 'info',
+          log_type: '성도 등록',
+          message: '김영수님이 신규 등록되었습니다',
+          created_at: '2024-01-15T10:30:00Z',
+          username: '김관리자'
+        },
+        {
+          id: 2,
+          log_level: 'info',
+          log_type: '기도 등록',
+          message: '새로운 기도 제목이 등록되었습니다',
+          created_at: '2024-01-15T09:15:00Z',
+          username: '박성도'
+        },
+        {
+          id: 3,
+          log_level: 'warning',
+          log_type: '시스템',
+          message: '백업 프로세스가 지연되고 있습니다',
+          created_at: '2024-01-15T08:00:00Z',
+          username: 'system'
+        },
+        {
+          id: 4,
+          log_level: 'info',
+          log_type: '헌금 입력',
+          message: '십일조 헌금이 입력되었습니다',
+          created_at: '2024-01-14T16:45:00Z',
+          username: '이집사'
+        },
+        {
+          id: 5,
+          log_level: 'info',
+          log_type: '가족 등록',
+          message: '새로운 가족이 등록되었습니다',
+          created_at: '2024-01-14T14:20:00Z',
+          username: '최목사'
+        }
+      ];
+
+      // 실제 API 호출 with fallback
+      const data = await withFallback(
+        () => systemService.getSystemLogs({ limit: 10 }),
+        mockLogs
+      );
+      
       setLogs(data);
       setError(null);
     } catch (err) {
       setError('최근 활동 조회 중 오류가 발생했습니다');
       console.error('Error fetching logs:', err);
+      // 오류 발생 시에도 Mock 데이터 표시
+      setLogs([
+        {
+          id: 1,
+          log_level: 'info',
+          log_type: '시스템',
+          message: '최근 활동 데이터를 불러올 수 없습니다',
+          created_at: new Date().toISOString(),
+          username: 'system'
+        }
+      ]);
     } finally {
       setLoading(false);
     }

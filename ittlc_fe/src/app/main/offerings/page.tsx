@@ -15,21 +15,7 @@ import {
   FileText
 } from 'lucide-react';
 import OfferingCard from '@/components/offerings/OfferingCard';
-
-// 임시 인터페이스 (실제 API 구현 후 lib/api.ts로 이동)
-interface Offering {
-  id: number;
-  member_id: number;
-  member_name?: string;
-  offering_date: string;
-  offering_type: string;
-  amount: number;
-  memo?: string;
-  created_by: number;
-  created_by_username?: string;
-  created_at: string;
-  updated_at: string;
-}
+import { Offering, offeringService, withFallback } from '@/lib/api';
 
 interface OfferingFilter {
   member_id?: number;
@@ -66,15 +52,8 @@ const OfferingsPage: React.FC = () => {
     try {
       setLoading(true);
       
-      // TODO: 실제 API 호출로 변경
-      // const response = await fetch('/api/v1/offerings', {
-      //   method: 'GET',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ page: currentPage, ...filters })
-      // });
-      
-      // 임시 데이터 (실제 API 구현 후 변경)
-      const mockOfferings: Offering[] = [
+      // Mock 데이터 정의
+      const mockOfferings = [
         {
           id: 1,
           member_id: 1,
@@ -142,10 +121,22 @@ const OfferingsPage: React.FC = () => {
         }
       ];
 
-      setOfferings(mockOfferings);
-      setTotalOfferings(mockOfferings.length);
-      setTotalAmount(mockOfferings.reduce((sum, offering) => sum + offering.amount, 0));
-      setTotalPages(Math.ceil(mockOfferings.length / 10));
+      // 실제 API 호출 with fallback
+      const params = {
+        skip: (currentPage - 1) * 10,
+        limit: 10,
+        ...filters
+      };
+      
+      const data = await withFallback(
+        () => offeringService.getOfferings(params),
+        mockOfferings
+      );
+
+      setOfferings(data);
+      setTotalOfferings(data.length);
+      setTotalAmount(data.reduce((sum, offering) => sum + offering.amount, 0));
+      setTotalPages(Math.ceil(data.length / 10));
     } catch (error) {
       console.error('Error fetching offerings:', error);
     } finally {

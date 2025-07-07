@@ -12,7 +12,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import FamilyCard from '@/components/families/FamilyCard';
-import { Family } from '@/lib/api';
+import { Family, familyService, withFallback } from '@/lib/api';
 
 const FamiliesPage: React.FC = () => {
   const router = useRouter();
@@ -32,21 +32,15 @@ const FamiliesPage: React.FC = () => {
     try {
       setLoading(true);
       
-      // TODO: 실제 API 호출로 변경
-      // const response = await familyAPI.getFamilies({
-      //   skip: (currentPage - 1) * 10,
-      //   limit: 10
-      // });
-      
-      // 임시 데이터 (실제 API 구현 후 변경)
-      const mockFamilies: Family[] = [
+      // Mock 데이터 정의
+      const mockFamilies: any[] = [
         {
           id: 1,
           family_name: '김철수 가정',
           head_member_id: 1,
           head_member_name: '김철수',
           address: '서울시 강남구 테헤란로 123',
-          member_count: 4,
+          members_count: 4,
           created_at: '2023-01-15T10:00:00Z'
         },
         {
@@ -55,7 +49,7 @@ const FamiliesPage: React.FC = () => {
           head_member_id: 2,
           head_member_name: '이영희',
           address: '서울시 서초구 서초대로 456',
-          member_count: 3,
+          members_count: 3,
           created_at: '2023-02-10T11:00:00Z'
         },
         {
@@ -64,7 +58,7 @@ const FamiliesPage: React.FC = () => {
           head_member_id: 3,
           head_member_name: '박민수',
           address: '서울시 송파구 잠실로 789',
-          member_count: 2,
+          members_count: 2,
           created_at: '2023-03-05T15:00:00Z'
         },
         {
@@ -73,7 +67,7 @@ const FamiliesPage: React.FC = () => {
           head_member_id: 4,
           head_member_name: '정수연',
           address: '서울시 마포구 홍대입구역로 321',
-          member_count: 5,
+          members_count: 5,
           created_at: '2023-04-12T14:00:00Z'
         },
         {
@@ -82,15 +76,21 @@ const FamiliesPage: React.FC = () => {
           head_member_id: 5,
           head_member_name: '최민정',
           address: '서울시 용산구 이태원로 654',
-          member_count: 1,
+          members_count: 1,
           created_at: '2023-05-20T09:00:00Z'
         }
       ];
 
-      setFamilies(mockFamilies);
-      setTotalFamilies(mockFamilies.length);
-      setTotalMembers(mockFamilies.reduce((sum, family) => sum + (family.member_count || 0), 0));
-      setTotalPages(Math.ceil(mockFamilies.length / 10));
+      // 실제 API 호출 with fallback
+      const data = await withFallback(
+        () => familyService.getFamilies((currentPage - 1) * 10, 10),
+        mockFamilies
+      );
+
+      setFamilies(data);
+      setTotalFamilies(data.length);
+      setTotalMembers(data.reduce((sum: number, family: any) => sum + (family.members_count || 0), 0));
+      setTotalPages(Math.ceil(data.length / 10));
     } catch (error) {
       console.error('Error fetching families:', error);
     } finally {

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import MemberForm from '@/components/members/MemberForm';
-import { MemberCreate, memberAPI, Family, familyAPI } from '@/lib/api';
+import { MemberCreate, memberService, Family, familyService, withFallback } from '@/lib/api';
 
 export default function MemberRegistrationPage() {
   const router = useRouter();
@@ -14,17 +14,19 @@ export default function MemberRegistrationPage() {
   // 가족 목록 불러오기
   const loadFamilies = async () => {
     try {
-      // 실제 API 호출 시 사용할 코드
-      // const data = await familyAPI.getFamilies();
-      // setFamilies(data);
-      
-      // 현재는 목 데이터 사용
+      // Mock 데이터 정의
       const mockFamilies: Family[] = [
         { id: 1, family_name: '김철수 가정', head_member_id: 1, address: '서울시 강남구', head_member_name: '김철수', created_at: '2020-01-15T10:00:00Z' },
         { id: 2, family_name: '이영희 가정', head_member_id: 2, address: '서울시 서초구', head_member_name: '이영희', created_at: '2019-06-10T10:00:00Z' },
         { id: 3, family_name: '최지은 가정', head_member_id: 4, address: '서울시 마포구', head_member_name: '최지은', created_at: '2018-04-20T10:00:00Z' }
       ];
-      setFamilies(mockFamilies);
+      
+      // 실제 API 호출 with fallback
+      const data = await withFallback(
+        () => familyService.getFamilies(0, 100),
+        mockFamilies
+      );
+      setFamilies(data);
     } catch (err) {
       console.error('Error loading families:', err);
     }
@@ -39,11 +41,8 @@ export default function MemberRegistrationPage() {
       setLoading(true);
       setError(null);
       
-      // 실제 API 호출 시 사용할 코드
-      // await memberAPI.createMember(memberData);
-      
-      // 현재는 성공 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // 실제 API 호출
+      await memberService.createMember(memberData);
       
       alert('성도가 성공적으로 등록되었습니다.');
       router.push('/main/member/list');

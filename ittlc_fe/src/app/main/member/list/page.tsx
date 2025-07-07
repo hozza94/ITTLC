@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import MemberCard from '@/components/members/MemberCard';
-import { Member, memberAPI } from '@/lib/api';
+import { Member, memberService, withFallback } from '@/lib/api';
 
 export default function MemberListPage() {
   const router = useRouter();
@@ -142,16 +142,19 @@ export default function MemberListPage() {
   const loadMembers = async () => {
     try {
       setLoading(true);
-      // 실제 API 호출 시 사용할 코드
-      // const data = await memberAPI.getMembers();
-      // setMembers(data);
+      setError(null);
       
-      // 현재는 목 데이터 사용
-      await new Promise(resolve => setTimeout(resolve, 500)); // 로딩 시뮬레이션
-      setMembers(mockMembers);
+      // 실제 API 호출 with fallback
+      const data = await withFallback(
+        () => memberService.getMembers(0, 100),
+        mockMembers
+      );
+      setMembers(data);
     } catch (err) {
       setError('성도 목록을 불러오는데 실패했습니다.');
       console.error('Error loading members:', err);
+      // 오류 발생 시 Mock 데이터로 fallback
+      setMembers(mockMembers);
     } finally {
       setLoading(false);
     }
@@ -189,10 +192,10 @@ export default function MemberListPage() {
   const handleDelete = async (memberId: number) => {
     if (confirm('정말 삭제하시겠습니까?')) {
       try {
-        // 실제 API 호출 시 사용할 코드
-        // await memberAPI.deleteMember(memberId);
+        // 실제 API 호출
+        await memberService.deleteMember(memberId);
         
-        // 현재는 목 데이터에서 제거
+        // 성공 시 목록에서 제거
         setMembers(prev => prev.filter(m => m.id !== memberId));
         alert('성도가 삭제되었습니다.');
       } catch (err) {
@@ -211,7 +214,7 @@ export default function MemberListPage() {
     total: members.length,
     active: members.filter(m => m.is_active).length,
     baptized: members.filter(m => m.baptism_date).length,
-    thisYear: members.filter(m => new Date(m.registration_date).getFullYear() === new Date().getFullYear()).length
+    thisYear: members.filter(m => m.registration_date && new Date(m.registration_date).getFullYear() === new Date().getFullYear()).length
   };
 
   if (loading) {

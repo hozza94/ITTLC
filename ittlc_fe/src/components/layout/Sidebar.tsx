@@ -14,15 +14,13 @@ type MenuItem = {
 };
 
 const Sidebar = () => {
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+  const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
   const toggleMenu = (menuId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setExpandedMenus(prev => ({
-      ...prev,
-      [menuId]: !prev[menuId]
-    }));
+    // 현재 펼쳐진 메뉴가 클릭된 메뉴와 같으면 닫기, 다르면 해당 메뉴만 열기
+    setExpandedMenu(prev => prev === menuId ? null : menuId);
   }; 
 
   const menuItems: MenuItem[] = [
@@ -69,7 +67,18 @@ const Sidebar = () => {
         { id: 'family_registration', label: '가족 등록', href:'/main/families/new' },
       ],
     },
-    { id: 'admin', label: '관리자', href:'/main/admin' },
+    {
+      id: 'admin',
+      label: '관리자',
+      // href:'/main/admin',
+      subItems: [
+        { id: 'admin_dashboard', label: '관리자 대시보드', href:'/main/admin' },
+        { id: 'admin_users', label: '사용자 관리', href:'/main/admin/users' },
+        { id: 'admin_settings', label: '시스템 설정', href:'/main/admin/settings' },
+        { id: 'admin_logs', label: '로그 관리', href:'/main/admin/logs' },
+        { id: 'admin_backups', label: '백업 관리', href:'/main/admin/backups' },
+      ],
+    },
   ];
 
   return (
@@ -86,7 +95,7 @@ const Sidebar = () => {
                 >
                   <span>{item.label}</span>
                   <svg 
-                    className={`w-4 h-4 transition-transform duration-200 ${expandedMenus[item.id] ? 'transform rotate-180' : ''}`} 
+                    className={`w-4 h-4 transition-transform duration-200 ${expandedMenu === item.id ? 'transform rotate-180' : ''}`} 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24" 
@@ -105,7 +114,7 @@ const Sidebar = () => {
               )}
               {item.subItems && (
                 <div 
-                  className={`accordion-content ${expandedMenus[item.id] ? 'open' : ''}`}
+                  className={`accordion-content ${expandedMenu === item.id ? 'open' : ''}`}
                 >
                   <ul className="bg-gray-50">
                     {item.subItems.map((subItem) => (

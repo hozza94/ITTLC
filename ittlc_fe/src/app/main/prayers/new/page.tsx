@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import PrayerForm from '@/components/prayers/PrayerForm';
-import { PrayerCreate, PrayerUpdate, prayerAPI } from '@/lib/api';
+import { PrayerCreate, PrayerUpdate, prayerService } from '@/lib/api';
 
 const NewPrayerPage = () => {
   const router = useRouter();
@@ -13,7 +13,7 @@ const NewPrayerPage = () => {
   const handleSubmit = async (data: PrayerCreate | PrayerUpdate) => {
     try {
       setLoading(true);
-      const result = await prayerAPI.createPrayer(data as PrayerCreate);
+      const result = await prayerService.createPrayer(data as PrayerCreate);
       
       // 성공 시 상세 페이지로 이동
       router.push(`/main/prayers/${result.id}`);

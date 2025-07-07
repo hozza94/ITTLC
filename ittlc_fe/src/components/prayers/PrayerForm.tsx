@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, X, Eye, EyeOff, Users, Calendar, Tag } from 'lucide-react';
-import { PrayerCreate, PrayerUpdate, PrayerCategory, prayerAPI } from '@/lib/api';
+import { PrayerCreate, PrayerUpdate, PrayerCategory, prayerService, withFallback } from '@/lib/api';
 
 interface PrayerFormProps {
   initialData?: Partial<PrayerUpdate>;
@@ -42,10 +42,28 @@ const PrayerForm: React.FC<PrayerFormProps> = ({
   const fetchCategories = async () => {
     try {
       setLoadingCategories(true);
-      const data = await prayerAPI.getCategories();
+      
+      // Mock 데이터 정의
+      const mockCategories: PrayerCategory[] = [
+        { id: 1, name: '교회', description: '교회 관련 기도', is_active: true },
+        { id: 2, name: '가족', description: '가족 관련 기도', is_active: true },
+        { id: 3, name: '개인', description: '개인 관련 기도', is_active: true },
+        { id: 4, name: '선교', description: '선교 관련 기도', is_active: true },
+        { id: 5, name: '치유', description: '치유 관련 기도', is_active: true }
+      ];
+      
+      // 실제 API 호출 with fallback
+      const data = await withFallback(
+        () => prayerService.getPrayerCategories(),
+        mockCategories
+      );
       setCategories(data);
     } catch (error) {
       console.error('Error fetching categories:', error);
+      // 오류 발생 시 기본 카테고리 설정
+      setCategories([
+        { id: 1, name: '일반', description: '일반 기도', is_active: true }
+      ]);
     } finally {
       setLoadingCategories(false);
     }
@@ -104,21 +122,21 @@ const PrayerForm: React.FC<PrayerFormProps> = ({
     }
 
     try {
-      const submitData = { ...formData };
+      const submitData: any = { ...formData };
       
       // 빈 문자열을 undefined로 변환
-      if (!submitData.prayer_period_start) submitData.prayer_period_start = undefined;
-      if (!submitData.prayer_period_end) submitData.prayer_period_end = undefined;
-      if (!submitData.tags) submitData.tags = undefined;
-      if (!submitData.answer_content) submitData.answer_content = undefined;
-      if (!submitData.answer_date) submitData.answer_date = undefined;
+      if (!submitData.prayer_period_start) delete submitData.prayer_period_start;
+      if (!submitData.prayer_period_end) delete submitData.prayer_period_end;
+      if (!submitData.tags) delete submitData.tags;
+      if (!submitData.answer_content) delete submitData.answer_content;
+      if (!submitData.answer_date) delete submitData.answer_date;
 
       if (isEditing) {
         await onSubmit(submitData as PrayerUpdate);
       } else {
         await onSubmit({
           ...submitData,
-          created_by: 1 // TODO: 실제 사용자 ID로 변경
+          user_id: 1 // TODO: 실제 사용자 ID로 변경
         } as PrayerCreate);
       }
     } catch (error) {
